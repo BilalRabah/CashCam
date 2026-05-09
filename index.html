@@ -5,15 +5,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://sdk.minepi.com/pi-sdk.js"></script>
 </head>
-<body style="text-align: center; font-family: sans-serif; padding-top: 100px;">
-    <h2>CashCam - Step 10</h2>
-    <button id="pay-btn" style="padding: 20px 40px; background: #673ab7; color: white; border-radius: 10px; font-size: 20px; border: none; cursor: pointer;">
-        PAY 1 TEST-PI
-    </button>
+<body style="text-align: center; font-family: sans-serif; padding-top: 100px; background-color: #f8f9fa;">
+    <div style="background: white; display: inline-block; padding: 40px; border-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+        <h2 style="color: #333;">CashCam App</h2>
+        <p style="color: #666;">Step 10 - Payment Verification</p>
+        
+        <button id="pay-btn" style="padding: 20px 50px; background: #673ab7; color: white; border-radius: 12px; font-size: 22px; border: none; cursor: pointer; font-weight: bold;">
+            PAY 1.0 PI
+        </button>
+    </div>
 
     <script>
         const Pi = window.Pi;
         
+        // تم تثبيت مفتاحك الشخصي هنا بنجاح
         Pi.init({ 
             version: "2.0", 
             sandbox: true,
@@ -22,19 +27,17 @@
 
         document.getElementById('pay-btn').onclick = function() {
             Pi.createPayment({
-                amount: 1,
-                memo: "Final Step 10 Activation",
-                metadata: { orderId: "bilal-cashcam-10" }
+                amount: 1.0,
+                memo: "Step 10 Activation",
+                metadata: { orderId: "order-10-cashcam" }
             }, {
                 onReadyForServerApproval: function(paymentId) {
-                    console.log("Payment Ready for Approval");
+                    console.log("Payment Ready");
                 },
                 onReadyForServerCompletion: function(paymentId, txid) {
                     alert("Success! Step 10 Completed.");
                 },
-                onCancel: function(paymentId) { 
-                    console.log("Payment Cancelled"); 
-                },
+                onCancel: function(paymentId) { },
                 onError: function(error) { 
                     alert("Error: " + error.message);
                 }
