@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <title>CashCam App</title>
+    <script src="https://sdk.minepi.com/pi-sdk.js"></script>
+</head>
+<body>
+    <h1 style="text-align: center;">مرحباً بك في تطبيق CashCam</h1>
+    <p style="text-align: center;">هذه الصفحة مخصصة لإتمام الخطوة العاشرة وتجربة الدفع.</p>
+    
+    <div style="text-align: center; margin-top: 50px;">
+        <button id="pay-button" style="padding: 20px; background-color: purple; color: white; border: none; border-radius: 10px; font-size: 18px; cursor: pointer;">
+            اضغط هنا لتجربة دفع 1 Pi
+        </button>
+    </div>
+
+    <script>
+        // تشغيل نظام Pi داخل الصفحة
+        const Pi = window.Pi;
+        Pi.init({ version: "2.0", sandbox: true });
+
+        document.getElementById('pay-button').onclick = function() {
+            // طلب إنشاء عملية دفع تجريبية
+            Pi.createPayment({
+                amount: 1,
+                memo: "تجربة إتمام الخطوة العاشرة لتطبيق CashCam",
+                metadata: { orderId: "step-10-test" }
+            }, {
+                onReadyForServerApproval: function(paymentId) {
+                    // هذه الخطوة ضرورية لتطبيق Pi ليوافق على العملية
+                    console.log("تم استلام معرف الدفع: " + paymentId);
+                },
+                onReadyForServerCompletion: function(paymentId, txid) {
+                    alert("مبروك! تمت عملية الدفع بنجاح.");
+                },
+                onCancel: function(paymentId) { console.log("تم إلغاء العملية"); },
+                onError: function(error, payment) { console.error(error); }
+            });
+        };
+    </script>
+</body>
+</html>
