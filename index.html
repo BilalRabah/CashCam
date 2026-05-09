@@ -1,25 +1,19 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://sdk.minepi.com/pi-sdk.js"></script>
-    <style>
-        body { font-family: Arial, sans-serif; text-align: center; padding-top: 100px; background-color: #f4f4f4; }
-        .container { background: white; padding: 30px; border-radius: 15px; display: inline-block; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        button { background-color: #673ab7; color: white; border: none; padding: 20px 40px; font-size: 20px; border-radius: 10px; cursor: pointer; transition: 0.3s; }
-        button:hover { background-color: #512da8; }
-    </style>
 </head>
-<body>
-    <div class="container">
-        <h2>تطبيق CashCam</h2>
-        <p>اضغط على الزر أدناه لإكمال الخطوة 10</p>
-        <button id="pay-btn">دفع 1 باي للتفعيل</button>
-    </div>
+<body style="text-align: center; font-family: sans-serif; padding-top: 100px;">
+    <h2>CashCam - Step 10</h2>
+    <button id="pay-btn" style="padding: 20px 40px; background: #673ab7; color: white; border-radius: 10px; font-size: 20px; border: none; cursor: pointer;">
+        PAY 1 TEST-PI
+    </button>
 
     <script>
         const Pi = window.Pi;
+        
         Pi.init({ 
             version: "2.0", 
             sandbox: true,
@@ -29,13 +23,21 @@
         document.getElementById('pay-btn').onclick = function() {
             Pi.createPayment({
                 amount: 1,
-                memo: "تفعيل الخطوة 10 - كاش كام",
-                metadata: { orderId: "final-step-10" }
+                memo: "Final Step 10 Activation",
+                metadata: { orderId: "bilal-cashcam-10" }
             }, {
-                onReadyForServerApproval: function(id) { console.log("Approved"); },
-                onReadyForServerCompletion: function(id, tx) { alert("تمت العملية بنجاح! مبروك الـ 10/10"); },
-                onCancel: function(id) { },
-                onError: function(err) { alert("تأكد من فتح الرابط داخل Pi Browser حصراً"); }
+                onReadyForServerApproval: function(paymentId) {
+                    console.log("Payment Ready for Approval");
+                },
+                onReadyForServerCompletion: function(paymentId, txid) {
+                    alert("Success! Step 10 Completed.");
+                },
+                onCancel: function(paymentId) { 
+                    console.log("Payment Cancelled"); 
+                },
+                onError: function(error) { 
+                    alert("Error: " + error.message);
+                }
             });
         };
     </script>
