@@ -3,47 +3,50 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CashCam - Pi Network Integration</title>
-    <!-- استدعاء أحدث نسخة من الـ SDK -->
+    <title>CashCam - Pi Network</title>
+    <!-- استدعاء المكتبة الرسمية لشبكة Pi -->
     <script src="https://sdk.minepi.com/pi-sdk.js"></script>
 </head>
 <body>
-    <h1>CashCam App is Running!</h1>
-    <p>Status: Integration in Progress</p>
-    
-    <button id="pay-button" style="padding: 15px; background: #673ab7; color: white; border: none; border-radius: 8px;">
-        Pay 0.5 Pi (Testnet)
-    </button>
+
+    <div style="text-align: center; margin-top: 50px; font-family: Arial, sans-serif;">
+        <h1>CashCam App is Running!</h1>
+        <p>بانتظار إتمام عملية الدفع التجريبية</p>
+        
+        <!-- زر الدفع -->
+        <button id="pay-button" style="padding: 15px 30px; background: #673ab7; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 18px;">
+            Pay 0.5 Pi (Testnet)
+        </button>
+    </div>
 
     <script>
-        // تهيئة الـ SDK
+        // 1. تهيئة الـ SDK
         const Pi = window.Pi;
-        Pi.init({ version: "2.0", sandbox: true }); // اجعل sandbox: false عند الانتقال للماينيت
+        Pi.init({ version: "2.0", sandbox: true });
 
-        document.getElementById('pay-button').onclick = function() {
+        // 2. برمجة ما يحدث عند الضغط على الزر
+        document.getElementById('pay-button').onclick = async function() {
             try {
-                const payment = Pi.createPayment({
+                const payment = await Pi.createPayment({
                     amount: 0.5,
-                    memo: "Testing CashCam Premium Features",
-                    metadata: { productId: "premium_001" },
+                    memo: "تجربة دفع لتطبيق CashCam",
+                    metadata: { orderId: "test_order_1" },
                 }, {
                     onReadyForServerApproval: function(paymentId) {
-                        console.log("Payment ID for server approval:", paymentId);
-                        // هنا يتم إرسال المعرف للسيرفر إذا كان لديك سيرفر خلفي
+                        alert("تم استلام طلبك! معرف الدفع: " + paymentId);
                     },
                     onReadyForServerCompletion: function(paymentId, txid) {
-                        console.log("Payment ready for completion. TXID:", txid);
+                        alert("نجحت العملية! رقم المعاملة: " + txid);
                     },
                     onCancel: function(paymentId) {
-                        console.log("Payment cancelled.");
+                        alert("تم إلغاء عملية الدفع");
                     },
                     onError: function(error, payment) {
-                        console.error("Payment error occurred:", error);
-                        alert("Error: " + error.message);
-                    },
+                        alert("حدث خطأ: " + error.message);
+                    }
                 });
             } catch (err) {
-                console.error("Initialization error:", err);
+                alert("تعذر الاتصال بمحفظة Pi. تأكد أنك تستخدم Pi Browser");
             }
         };
     </script>
