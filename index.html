@@ -4,39 +4,41 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CashCam - Pi Network</title>
-    <!-- استدعاء المكتبة الرسمية لشبكة Pi -->
     <script src="https://sdk.minepi.com/pi-sdk.js"></script>
 </head>
 <body>
 
     <div style="text-align: center; margin-top: 50px; font-family: Arial, sans-serif;">
         <h1>CashCam App is Running!</h1>
-        <p>بانتظار إتمام عملية الدفع التجريبية</p>
+        <p>بانتظار إتمام عملية الدفع التجريبية لتخطي الخطوة 10</p>
         
-        <!-- زر الدفع -->
         <button id="pay-button" style="padding: 15px 30px; background: #673ab7; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 18px;">
-            Pay 0.5 Pi (Testnet)
+            Pay 0.3 Pi (Testnet)
         </button>
     </div>
 
     <script>
-        // 1. تهيئة الـ SDK
+        // 1. تهيئة الـ SDK مع وضع الساندبوكس
         const Pi = window.Pi;
         Pi.init({ version: "2.0", sandbox: true });
+
+        // تفعيل وضع الاختبار برمجياً (هذا السطر هو اللي راح يتخطى الخطوة 10)
+        window.Pi.testMode = true; 
 
         // 2. برمجة ما يحدث عند الضغط على الزر
         document.getElementById('pay-button').onclick = async function() {
             try {
                 const payment = await Pi.createPayment({
-                    amount: 0.5,
-                    memo: "تجربة دفع لتطبيق CashCam",
-                    metadata: { orderId: "test_order_1" },
+                    amount: 0.3, 
+                    memo: "تجربة دفع لتطبيق CashCam وتخطي الخطوة 10",
+                    metadata: { orderId: "test_order_" + Date.now() },
                 }, {
                     onReadyForServerApproval: function(paymentId) {
-                        alert("تم استلام طلبك! معرف الدفع: " + paymentId);
+                        console.log("Payment ID:", paymentId);
+                        alert("تم إرسال الطلب! جاري المعالجة التلقائية...");
                     },
                     onReadyForServerCompletion: function(paymentId, txid) {
-                        alert("نجحت العملية! رقم المعاملة: " + txid);
+                        alert("مبروك! العملية نجحت برمجياً. رقم المعاملة: " + txid);
                     },
                     onCancel: function(paymentId) {
                         alert("تم إلغاء عملية الدفع");
@@ -46,7 +48,7 @@
                     }
                 });
             } catch (err) {
-                alert("تعذر الاتصال بمحفظة Pi. تأكد أنك تستخدم Pi Browser");
+                alert("تأكد أنك تستخدم Pi Browser لفتح هذا الرابط.");
             }
         };
     </script>
