@@ -10,8 +10,8 @@
 
     <div style="text-align: center; margin-top: 50px; font-family: Arial, sans-serif;">
         <h1>CashCam App is Running!</h1>
-        <p id="status-text" style="color: #ff9800; font-weight: bold;">جاري التحقق من البيئة وتوثيق الحساب التجريبي...</p>
-        <p>بانتظار إتمام عملية الدفع التجريبية لتخطي الخطوة 10</p>
+        <p id="status-text" style="color: #ff9800; font-weight: bold;">Checking environment and authenticating test user...</p>
+        <p>Waiting for test payment to bypass Step 10</p>
         
         <button id="pay-button" disabled style="padding: 15px 30px; background: #9e9e9e; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 18px;">
             Pay 0.3 Pi (Testnet)
@@ -43,14 +43,14 @@
                 if (testCredentials.username === "testuser") {
                     setupAppForUser(testCredentials.username);
                 } else {
-                    statusText.innerText = "تأكد أنك تستخدم Pi Browser لفتح هذا الرابط.";
+                    statusText.innerText = "Please make sure you are using Pi Browser to open this link.";
                     statusText.style.color = "red";
                 }
             }
         }
 
         function setupAppForUser(username) {
-            statusText.innerText = `مرحباً بك ${username}! تم التوثيق بنجاح وجاهز للدفع التجريبي.`;
+            statusText.innerText = `Welcome ${username}! Authenticated successfully. Ready for test payment.`;
             statusText.style.color = "green";
             payButton.removeAttribute('disabled');
             payButton.style.background = "#673ab7";
@@ -66,37 +66,37 @@
 
         payButton.onclick = async function() {
             try {
-                statusText.innerText = "جاري معالجة طلب الدفع التجريبي لـ CashCam...";
+                statusText.innerText = "Processing CashCam test payment request...";
                 
                 const payment = await Pi.createPayment({
                     amount: 0.3, 
-                    memo: `تجربة دفع للحساب ${testCredentials.username} لتخطي الخطوة 10`,
+                    memo: `Test payment for ${testCredentials.username} to bypass Step 10`,
                     metadata: { 
                         orderId: "CashCam_test_" + Date.now(),
                         developerUser: testCredentials.username
                     },
                 }, {
                     onReadyForServerApproval: function(paymentId) {
-                        alert("تم إنشاء الدفعة بنجاح! معرّف المعاملة: " + paymentId);
+                        alert("Payment created successfully! ID: " + paymentId);
                     },
                     onReadyForServerCompletion: function(paymentId, txid) {
-                        statusText.innerText = "تمت عملية الدفع بنجاح وتخطي الخطوة 10!";
+                        statusText.innerText = "Payment completed successfully! Step 10 bypassed.";
                         statusText.style.color = "green";
-                        alert("مبروك ضلعي! العملية نجحت برمجياً. رقم الـ TxID: " + txid);
+                        alert("Success! Transaction ID (TxID): " + txid);
                     },
                     onCancel: function(paymentId) {
-                        statusText.innerText = "تم إلغاء الدفع من قبل المستخدم.";
+                        statusText.innerText = "Payment cancelled by user.";
                         statusText.style.color = "#ff9800";
-                        alert("تم إلغاء عملية الدفع");
+                        alert("Payment cancelled.");
                     },
                     onError: function(error, payment) {
-                        statusText.innerText = "حدث خطأ أثناء معالجة الدفع بالشبكة.";
+                        statusText.innerText = "Network error during payment processing.";
                         statusText.style.color = "red";
-                        alert("حدث خطأ: " + error.message);
+                        alert("Error: " + error.message);
                     }
                 });
             } catch (err) {
-                alert("فشلت المعاملة: " + err.message);
+                alert("Transaction failed: " + err.message);
             }
         };
     </script>
