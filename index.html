@@ -4,51 +4,100 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CashCam - Pi Network</title>
+    <!-- استدعاء الـ SDK الرسمي -->
     <script src="https://sdk.minepi.com/pi-sdk.js"></script>
 </head>
 <body>
 
     <div style="text-align: center; margin-top: 50px; font-family: Arial, sans-serif;">
         <h1>CashCam App is Running!</h1>
+        <p id="status-text" style="color: #ff9800; font-weight: bold;">جاري التحقق من البيئة والاتصال بـ Pi Browser...</p>
         <p>بانتظار إتمام عملية الدفع التجريبية لتخطي الخطوة 10</p>
         
-        <button id="pay-button" style="padding: 15px 30px; background: #673ab7; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 18px;">
+        <!-- الزر معطل في البداية لحين نجاح الـ Auth -->
+        <button id="pay-button" disabled style="padding: 15px 30px; background: #9e9e9e; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 18px;">
             Pay 0.3 Pi (Testnet)
         </button>
     </div>
 
     <script>
-        // 1. تهيئة الـ SDK مع وضع الساندبوكس
+        // 1. تهيئة الـ SDK
         const Pi = window.Pi;
         Pi.init({ version: "2.0", sandbox: true });
 
-        // تفعيل وضع الاختبار برمجياً (هذا السطر هو اللي راح يتخطى الخطوة 10)
-        window.Pi.testMode = true; 
+        const payButton = document.getElementById('pay-button');
+        const statusText = document.getElementById('status-text');
 
-        // 2. برمجة ما يحدث عند الضغط على الزر
-        document.getElementById('pay-button').onclick = async function() {
+        // 2. دالة تسجيل الدخول (مهمة جداً قبل أي عملية دفع)
+        async function authPiUser() {
             try {
+                // طلب تسجيل الدخول وتحديد الصلاحيات المطلوبة
+                const scopes = ['username', 'payments'];
+                
+                // هذه الدالة هي اللي راح تختبر هل المتصفح هو Pi Browser فعلاً أم لا
+                const authResult = await Pi.authenticate(scopes, onIncompletePaymentFound);
+                
+                console.log("تم تسجيل الدخول بنجاح للمستخدم:", authResult.user.username);
+                
+                // تفعيل الزر وتغيير الحالة
+                statusText.innerText = `مرحباً بك ${authResult.user.username}! متصل بـ Pi Browser بنجاح.`;
+                statusText.style.color = "green";
+                payButton.removeAttribute('disabled');
+                payButton.style.background = "#673ab7"; // تغيير اللون للبنفسجي ليدل على التفعيل
+                
+            } catch (err) {
+                console.error("Authentication error:", err);
+                statusText.innerText = "تأكد أنك تستخدم Pi Browser لفتح هذا الرابط.";
+                statusText.style.color = "red";
+                alert("خطأ: لم يتم التعرف على متصفح Pi Browser. افتح الرابط من داخل التطبيق حصراً.");
+            }
+        }
+
+        // دالة تتعامل مع المدفوعات المعلقة (إجبارية من الـ SDK)
+        function onIncompletePaymentFound(payment) {
+            console.log("هناك دفعة معلقة لم تكتمل:", payment);
+            // هنا تكدر ترسل الـ payment.identifier للسيرفر مالتك إذا تحتاج تسوي تسوية (Settlement)
+        }
+
+        // تشغيل التحقق تلقائياً عند فتح الصفحة
+        window.onload = function() {
+            authPiUser();
+        };
+
+        // 3. برمجة زر الدفع بعد تفعيله
+        payButton.onclick = async function() {
+            try {
+                statusText.innerText = "جاري إنشاء طلب الدفع...";
+                
                 const payment = await Pi.createPayment({
                     amount: 0.3, 
                     memo: "تجربة دفع لتطبيق CashCam وتخطي الخطوة 10",
-                    metadata: { orderId: "test_order_" + Date.now() },
+                    metadata: { orderId: "CashCam_test_" + Date.now() },
                 }, {
                     onReadyForServerApproval: function(paymentId) {
-                        console.log("Payment ID:", paymentId);
-                        alert("تم إرسال الطلب! جاري المعالجة التلقائية...");
+                        console.log("Payment ID ready for approval:", paymentId);
+                        // ملاحظة للخطوة 10: بما انه تطبيق تجريبي بدون سيرفر خلفي معقد حالياً،
+                        // الـ SDK بوضع الساندبوكس راح يعطيك موافقة تلقائية بعد ثواني أو تحتاج تسوي موافقة يدوبة بالـ Developer Portal
+                        alert("تم إنشاء الدفعة بنجاح! معرف الدفع: " + paymentId);
                     },
                     onReadyForServerCompletion: function(paymentId, txid) {
-                        alert("مبروك! العملية نجحت برمجياً. رقم المعاملة: " + txid);
+                        statusText.innerText = "تمت عملية الدفع بنجاح والتأكيد من الشبكة!";
+                        statusText.style.color = "green";
+                        alert("مبروك! العملية نجحت برمجياً. رقم المعاملة (TxID): " + txid);
                     },
                     onCancel: function(paymentId) {
+                        statusText.innerText = "تم إلغاء الدفع من قبل المستخدم.";
+                        statusText.style.color = "#ff9800";
                         alert("تم إلغاء عملية الدفع");
                     },
                     onError: function(error, payment) {
-                        alert("حدث خطأ: " + error.message);
+                        statusText.innerText = "حدث خطأ أثناء الدفع.";
+                        statusText.style.color = "red";
+                        alert("حدث خطأ في الشبكة: " + error.message);
                     }
                 });
             } catch (err) {
-                alert("تأكد أنك تستخدم Pi Browser لفتح هذا الرابط.");
+                alert("فشلت عملية الدفع: " + err.message);
             }
         };
     </script>
