@@ -13,7 +13,8 @@ https://api.minepi.com/v2/payments/${paymentId}/approve,
 {},
 {
 headers: {
-Authorization: fqbrs4owitj1f8foektnajj40upqzmyyu5p1mgg4ghcvn67esfgkgb1sbvuiiuk1
+Authorization:'Key 6gv2wlgs5ucf99622gbfnmfnsdwqu5cewvdjwd5fcsz2flbp2mf2vpft2afyio1f'
+
 }
 }
 );
