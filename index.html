@@ -64,7 +64,23 @@ document.getElementById("payBtn").onclick = async () => {
                     console.log("Ready for approval", paymentId);
 
                     document.getElementById("status").innerText =
-                        "Payment created: " + paymentId;
+                        "Payment created: " + paymentId + " Sending to Vercel for approval...";
+
+                    // الربط المباشر مع السيرفر مالتك اللي رفعناه على Vercel
+                    fetch("/api/approve", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify({ paymentId })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log("Server response:", data);
+                    })
+                    .catch(err => {
+                        console.error("Fetch error:", err);
+                    });
                 },
 
                 onReadyForServerCompletion: function(paymentId, txid) {
