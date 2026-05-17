@@ -1,1 +1,10 @@
-
+{
+"version": 2,
+"builds": [
+{ "src": "api/approve.js", "use": "@vercel/node" }
+],
+"routes": [
+{ "src": "/api/approve", "dest": "api/approve.js" },
+{ "src": "/(.*)", "dest": "/$1" }
+]
+}
