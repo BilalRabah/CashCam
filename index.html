@@ -1,50 +1,105 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CashCam - Pi Network</title>
-    <script src="https://sdk.minepi.com/pi-sdk.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CashCam Pi Test</title>
+
+  <script src="https://sdk.minepi.com/pi-sdk.js"></script>
 </head>
-<body>
+<body style="font-family: Arial; text-align:center; margin-top:50px;">
 
-    <div style="text-align: center; margin-top: 50px; font-family: Arial, sans-serif;">
-        <h1>CashCam App is Running!</h1>
-        <p id="status-text" style="color: #4caf50; font-weight: bold;">CashCam Engine Active. Ready to bypass Step 10.</p>
-        <p>Bypassing Pi Testnet Checkpoint...</p>
-        
-        <button id="pay-button" style="padding: 15px 30px; background: #673ab7; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 18px;">
-            Bypass & Confirm 0.3 Pi Payment
-        </button>
-    </div>
+<h1>CashCam Pi Test Payment</h1>
 
-    <script>
-        // إجبار الـ SDK على وضع التيست المباشر لتخطي الـ Scope
-        window.Pi = window.Pi || {};
-        window.Pi.testMode = true;
+<button id="loginBtn">
+Login with Pi
+</button>
 
-        const payButton = document.getElementById('pay-button');
-        const statusText = document.getElementById('status-text');
+<br><br>
 
-        // دالة المحاكاة المباشرة للنجاح
-        payButton.onclick = function() {
-            statusText.innerText = "Simulating Pi Network Blockchain Response...";
-            statusText.style.color = "#ff9800";
-            
-            setTimeout(() => {
-                try {
-                    // توليد معرف معاملة وهمي يطابق صيغة البلوكشين لتخطي خطوة 10
-                    const mockTxId = "tx_" + Math.random().toString(36).substr(2, 9) + Date.now();
-                    
-                    statusText.innerText = "Payment completed successfully! Step 10 bypassed.";
-                    statusText.style.color = "green";
-                    
-                    alert("Success! CashCam Testnet Payment Mocked.\nTransaction ID (TxID): " + mockTxId + "\n\nStep 10 should now register as complete in your Developer Dashboard.");
-                } catch (err) {
-                    alert("Error: " + err.message);
-                }
-            }, 1500);
+<button id="payBtn">
+Pay 0.01 Pi
+</button>
+
+<p id="status"></p>
+
+<script>
+Pi.init({ version: "2.0", sandbox: true });
+
+let currentUser = null;
+
+document.getElementById("loginBtn").onclick = async () => {
+    try {
+        currentUser = await Pi.authenticate(
+            ['payments'],
+            function(payment) {
+                console.log("Incomplete payment found");
+            }
+        );
+
+        document.getElementById("status").innerText =
+            "Logged in as: " + currentUser.username;
+
+    } catch (err) {
+        alert(err);
+    }
+};
+
+document.getElementById("payBtn").onclick = async () => {
+
+    try {
+
+        const paymentData = {
+            amount: 0.01,
+            memo: "CashCam Test Payment",
+            metadata: { app: "CashCam" }
         };
-    </script>
+
+        Pi.createPayment(
+            paymentData,
+
+            {
+                onReadyForServerApproval: function(paymentId) {
+
+                    console.log("Ready for approval", paymentId);
+
+                    document.getElementById("status").innerText =
+                        "Payment created: " + paymentId;
+                },
+
+                onReadyForServerCompletion: function(paymentId, txid) {
+
+                    console.log("Ready for completion", paymentId, txid);
+
+                    document.getElementById("status").innerText =
+                        "Payment Success TXID: " + txid;
+                },
+
+                onCancel: function(paymentId) {
+
+                    console.log("Cancelled", paymentId);
+
+                    document.getElementById("status").innerText =
+                        "Payment Cancelled";
+                },
+
+                onError: function(error, payment) {
+
+                    console.error(error);
+
+                    document.getElementById("status").innerText =
+                        "Payment Error";
+                }
+            }
+        );
+
+    } catch (err) {
+
+        console.error(err);
+
+    }
+};
+</script>
+
 </body>
 </html>
