@@ -1,12 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>CashCam Pi Test</title>
 
   <script src="https://sdk.minepi.com/pi-sdk.js"></script>
 </head>
+
 <body style="font-family: Arial; text-align:center; margin-top:50px;">
 
 <h1>CashCam Pi Test Payment</h1>
@@ -24,16 +25,22 @@ Pay 0.01 Pi
 <p id="status"></p>
 
 <script>
-Pi.init({ version: "2.0", sandbox: true });
+
+Pi.init({
+    version: "2.0",
+    sandbox: true
+});
 
 let currentUser = null;
 
 document.getElementById("loginBtn").onclick = async () => {
+
     try {
+
         currentUser = await Pi.authenticate(
             ['payments'],
             function(payment) {
-                console.log("Incomplete payment found");
+                console.log("Incomplete payment found", payment);
             }
         );
 
@@ -41,7 +48,11 @@ document.getElementById("loginBtn").onclick = async () => {
             "Logged in as: " + currentUser.username;
 
     } catch (err) {
-        alert(err);
+
+        console.error(err);
+
+        document.getElementById("status").innerText =
+            "Login Failed";
     }
 };
 
@@ -52,34 +63,51 @@ document.getElementById("payBtn").onclick = async () => {
         const paymentData = {
             amount: 0.01,
             memo: "CashCam Test Payment",
-            metadata: { app: "CashCam" }
+            metadata: {
+                app: "CashCam"
+            }
         };
 
         Pi.createPayment(
             paymentData,
 
             {
+
                 onReadyForServerApproval: function(paymentId) {
 
                     console.log("Ready for approval", paymentId);
 
                     document.getElementById("status").innerText =
-                        "Payment created: " + paymentId + " Sending to Vercel for approval...";
+                        "Sending payment for approval...";
 
-                    // الربط المباشر مع السيرفر مالتك اللي رفعناه على Vercel
                     fetch("/api/approve", {
+
                         method: "POST",
+
                         headers: {
                             "Content-Type": "application/json"
                         },
-                        body: JSON.stringify({ paymentId })
+
+                        body: JSON.stringify({
+                            paymentId: paymentId
+                        })
+
                     })
+
                     .then(response => response.json())
+
                     .then(data => {
-                        console.log("Server response:", data);
+
+                        console.log("Approval response:", data);
+
                     })
+
                     .catch(err => {
-                        console.error("Fetch error:", err);
+
+                        console.error("Approval error:", err);
+
+                        document.getElementById("status").innerText =
+                            "Approval Failed";
                     });
                 },
 
@@ -87,13 +115,44 @@ document.getElementById("payBtn").onclick = async () => {
 
                     console.log("Ready for completion", paymentId, txid);
 
-                    document.getElementById("status").innerText =
-                        "Payment Success TXID: " + txid;
+                    fetch("/api/complete", {
+
+                        method: "POST",
+
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+
+                        body: JSON.stringify({
+                            paymentId: paymentId,
+                            txid: txid
+                        })
+
+                    })
+
+                    .then(response => response.json())
+
+                    .then(data => {
+
+                        console.log("Completion response:", data);
+
+                        document.getElementById("status").innerText =
+                            "Payment Completed Successfully";
+
+                    })
+
+                    .catch(err => {
+
+                        console.error("Completion error:", err);
+
+                        document.getElementById("status").innerText =
+                            "Completion Failed";
+                    });
                 },
 
                 onCancel: function(paymentId) {
 
-                    console.log("Cancelled", paymentId);
+                    console.log("Payment Cancelled", paymentId);
 
                     document.getElementById("status").innerText =
                         "Payment Cancelled";
@@ -101,7 +160,7 @@ document.getElementById("payBtn").onclick = async () => {
 
                 onError: function(error, payment) {
 
-                    console.error(error);
+                    console.error("Payment Error", error);
 
                     document.getElementById("status").innerText =
                         "Payment Error";
@@ -113,8 +172,11 @@ document.getElementById("payBtn").onclick = async () => {
 
         console.error(err);
 
+        document.getElementById("status").innerText =
+            "Unexpected Error";
     }
 };
+
 </script>
 
 </body>
