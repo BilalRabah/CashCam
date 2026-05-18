@@ -1,29 +1,42 @@
-const axios = require('axios');
-
 module.exports = async (req, res) => {
+
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
   }
 
-  const paymentId = req.body.paymentId;
-
   try {
-    await axios.post(
+
+    const paymentId = req.body.paymentId;
+
+    const response = await fetch(
       `https://api.minepi.com/v2/payments/${paymentId}/approve`,
-      {},
       {
+        method: "POST",
+
         headers: {
-          Authorization: 'Key 6gv2wlgs5ucf99622gbfnmfnsdwqu5cewvdjwd5fcsz2flbp2mf2vpft2afyio1f'
+          "Authorization":
+            "Key 6gv2wlgs5ucf99622gbfnmfnsdwqu5cewvdjwd5fcsz2flbp2mf2vpft2afyio1f",
+          "Content-Type": "application/json"
         }
       }
     );
 
-    res.send({ success: true });
+    const data = await response.json();
+
+    res.status(200).json({
+      success: true,
+      data
+    });
+
   } catch (error) {
-    res.status(500).send({ success: false, error: error.message });
+
+    res.status(500).json({
+      success: false,
+      error: error.toString()
+    });
   }
 };
