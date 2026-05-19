@@ -7,7 +7,7 @@
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 
-    <title>CashCam Pi Test</title>
+    <title>CashCam Pi Payment</title>
 
     <script src="https://sdk.minepi.com/pi-sdk.js"></script>
 
@@ -24,23 +24,54 @@
 <br><br>
 
 <button id="payBtn">
-    Pay 0.031 Pi
+    Pay 0.071 Pi
 </button>
+
+<br><br>
+
+<button
+    id="clearBtn"
+    style="
+    background:red;
+    color:white;
+    border:none;
+    padding:10px 20px;
+    border-radius:8px;
+    cursor:pointer;
+    "
+>
+    Clear Pending Payments
+</button>
+
+<br><br>
 
 <p id="status"></p>
 
 <script>
 
 Pi.init({
+
     version: "2.0",
+
     sandbox: true
+
 });
 
 let currentUser = null;
 
-document.getElementById("loginBtn").onclick = async () => {
+
+
+/* =========================
+   LOGIN
+========================= */
+
+document.getElementById("loginBtn").onclick =
+async () => {
 
     try {
+
+        document.getElementById("status").innerText =
+            "Logging in...";
 
         currentUser = await Pi.authenticate(
 
@@ -48,10 +79,13 @@ document.getElementById("loginBtn").onclick = async () => {
 
             async function(payment) {
 
-                console.log("Incomplete payment found", payment);
+                console.log(
+                    "Incomplete payment found:",
+                    payment
+                );
 
                 document.getElementById("status").innerText =
-                    "Cleaning pending payment...";
+                    "Pending payment detected...";
 
                 try {
 
@@ -60,12 +94,16 @@ document.getElementById("loginBtn").onclick = async () => {
                         method: "POST",
 
                         headers: {
-                            "Content-Type": "application/json"
+
+                            "Content-Type":
+                            "application/json"
+
                         },
 
                         body: JSON.stringify({
 
-                            paymentId: payment.identifier,
+                            paymentId:
+                            payment.identifier,
 
                             txid:
                             payment.transaction?.txid || ""
@@ -74,12 +112,19 @@ document.getElementById("loginBtn").onclick = async () => {
 
                     });
 
+                    console.log(
+                        "Pending payment completed"
+                    );
+
                     document.getElementById("status").innerText =
                         "Pending payment cleared";
 
                 } catch(err) {
 
-                    console.error(err);
+                    console.error(
+                        "Pending cleanup failed:",
+                        err
+                    );
 
                     document.getElementById("status").innerText =
                         "Failed to clear pending payment";
@@ -88,9 +133,10 @@ document.getElementById("loginBtn").onclick = async () => {
         );
 
         document.getElementById("status").innerText =
-            "Logged in as: " + currentUser.username;
+            "Logged in as: " +
+            currentUser.username;
 
-    } catch (err) {
+    } catch(err) {
 
         console.error(err);
 
@@ -99,19 +145,36 @@ document.getElementById("loginBtn").onclick = async () => {
     }
 };
 
-document.getElementById("payBtn").onclick = async () => {
+
+
+/* =========================
+   PAYMENT
+========================= */
+
+document.getElementById("payBtn").onclick =
+async () => {
+
+    if (!currentUser) {
+
+        document.getElementById("status").innerText =
+            "Please login first";
+
+        return;
+    }
 
     try {
 
         const paymentData = {
 
-            amount: 0.031,
+            amount: 0.071,
 
-            memo: "CashCam Test Payment",
+            memo: "CashCam Payment 2026",
 
             metadata: {
 
-                app: "CashCam"
+                app: "CashCam",
+
+                time: Date.now()
 
             }
         };
@@ -126,7 +189,7 @@ document.getElementById("payBtn").onclick = async () => {
                 async function(paymentId) {
 
                     console.log(
-                        "Ready for approval",
+                        "Ready for approval:",
                         paymentId
                     );
 
@@ -141,13 +204,16 @@ document.getElementById("payBtn").onclick = async () => {
                             method: "POST",
 
                             headers: {
+
                                 "Content-Type":
                                 "application/json"
+
                             },
 
                             body: JSON.stringify({
 
-                                paymentId: paymentId
+                                paymentId:
+                                paymentId
 
                             })
 
@@ -156,22 +222,30 @@ document.getElementById("payBtn").onclick = async () => {
                         const data =
                         await response.json();
 
-                        console.log(data);
+                        console.log(
+                            "Approval response:",
+                            data
+                        );
 
                     } catch(err) {
 
-                        console.error(err);
+                        console.error(
+                            "Approval error:",
+                            err
+                        );
 
                         document.getElementById("status").innerText =
                             "Approval Failed";
                     }
                 },
 
+
+
                 onReadyForServerCompletion:
                 async function(paymentId, txid) {
 
                     console.log(
-                        "Ready for completion",
+                        "Ready for completion:",
                         paymentId,
                         txid
                     );
@@ -187,15 +261,19 @@ document.getElementById("payBtn").onclick = async () => {
                             method: "POST",
 
                             headers: {
+
                                 "Content-Type":
                                 "application/json"
+
                             },
 
                             body: JSON.stringify({
 
-                                paymentId: paymentId,
+                                paymentId:
+                                paymentId,
 
-                                txid: txid
+                                txid:
+                                txid
 
                             })
 
@@ -204,24 +282,32 @@ document.getElementById("payBtn").onclick = async () => {
                         const data =
                         await response.json();
 
-                        console.log(data);
+                        console.log(
+                            "Completion response:",
+                            data
+                        );
 
                         document.getElementById("status").innerText =
                             "Payment Completed Successfully";
 
                     } catch(err) {
 
-                        console.error(err);
+                        console.error(
+                            "Completion error:",
+                            err
+                        );
 
                         document.getElementById("status").innerText =
                             "Completion Failed";
                     }
                 },
 
+
+
                 onCancel: function(paymentId) {
 
                     console.log(
-                        "Payment Cancelled",
+                        "Payment Cancelled:",
                         paymentId
                     );
 
@@ -229,10 +315,12 @@ document.getElementById("payBtn").onclick = async () => {
                         "Payment Cancelled";
                 },
 
+
+
                 onError: function(error, payment) {
 
                     console.error(
-                        "Payment Error",
+                        "Payment Error:",
                         error
                     );
 
@@ -248,6 +336,39 @@ document.getElementById("payBtn").onclick = async () => {
 
         document.getElementById("status").innerText =
             "Unexpected Error";
+    }
+};
+
+
+
+/* =========================
+   CLEAR PENDING
+========================= */
+
+document.getElementById("clearBtn").onclick =
+async () => {
+
+    try {
+
+        localStorage.clear();
+
+        sessionStorage.clear();
+
+        document.getElementById("status").innerText =
+            "Pending cache cleared";
+
+        setTimeout(() => {
+
+            location.reload();
+
+        }, 1500);
+
+    } catch(err) {
+
+        console.error(err);
+
+        document.getElementById("status").innerText =
+            "Clear failed";
     }
 };
 
