@@ -1,11 +1,16 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>CashCam Pi Test</title>
 
-  <script src="https://sdk.minepi.com/pi-sdk.js"></script>
+<head>
+
+    <meta charset="UTF-8" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+    <title>CashCam Pi Test</title>
+
+    <script src="https://sdk.minepi.com/pi-sdk.js"></script>
+
 </head>
 
 <body style="font-family: Arial; text-align:center; margin-top:50px;">
@@ -13,13 +18,13 @@
 <h1>CashCam Pi Test Payment</h1>
 
 <button id="loginBtn">
-Login with Pi
+    Login with Pi
 </button>
 
 <br><br>
 
 <button id="payBtn">
-Pay 0.03 Pi
+    Pay 0.031 Pi
 </button>
 
 <p id="status"></p>
@@ -38,9 +43,47 @@ document.getElementById("loginBtn").onclick = async () => {
     try {
 
         currentUser = await Pi.authenticate(
+
             ['payments'],
-            function(payment) {
+
+            async function(payment) {
+
                 console.log("Incomplete payment found", payment);
+
+                document.getElementById("status").innerText =
+                    "Cleaning pending payment...";
+
+                try {
+
+                    await fetch("/api/complete", {
+
+                        method: "POST",
+
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+
+                        body: JSON.stringify({
+
+                            paymentId: payment.identifier,
+
+                            txid:
+                            payment.transaction?.txid || ""
+
+                        })
+
+                    });
+
+                    document.getElementById("status").innerText =
+                        "Pending payment cleared";
+
+                } catch(err) {
+
+                    console.error(err);
+
+                    document.getElementById("status").innerText =
+                        "Failed to clear pending payment";
+                }
             }
         );
 
@@ -61,98 +104,126 @@ document.getElementById("payBtn").onclick = async () => {
     try {
 
         const paymentData = {
-            amount: 0.03,
+
+            amount: 0.031,
+
             memo: "CashCam Test Payment",
+
             metadata: {
+
                 app: "CashCam"
+
             }
         };
 
         Pi.createPayment(
+
             paymentData,
 
             {
 
-                onReadyForServerApproval: function(paymentId) {
+                onReadyForServerApproval:
+                async function(paymentId) {
 
-                    console.log("Ready for approval", paymentId);
+                    console.log(
+                        "Ready for approval",
+                        paymentId
+                    );
 
                     document.getElementById("status").innerText =
-                        "Sending payment for approval...";
+                        "Approving payment...";
 
-                    fetch("/api/approve", {
+                    try {
 
-                        method: "POST",
+                        const response =
+                        await fetch("/api/approve", {
 
-                        headers: {
-                            "Content-Type": "application/json"
-                        },
+                            method: "POST",
 
-                        body: JSON.stringify({
-                            paymentId: paymentId
-                        })
+                            headers: {
+                                "Content-Type":
+                                "application/json"
+                            },
 
-                    })
+                            body: JSON.stringify({
 
-                    .then(response => response.json())
+                                paymentId: paymentId
 
-                    .then(data => {
+                            })
 
-                        console.log("Approval response:", data);
+                        });
 
-                    })
+                        const data =
+                        await response.json();
 
-                    .catch(err => {
+                        console.log(data);
 
-                        console.error("Approval error:", err);
+                    } catch(err) {
+
+                        console.error(err);
 
                         document.getElementById("status").innerText =
                             "Approval Failed";
-                    });
+                    }
                 },
 
-                onReadyForServerCompletion: function(paymentId, txid) {
+                onReadyForServerCompletion:
+                async function(paymentId, txid) {
 
-                    console.log("Ready for completion", paymentId, txid);
+                    console.log(
+                        "Ready for completion",
+                        paymentId,
+                        txid
+                    );
 
-                    fetch("/api/complete", {
+                    document.getElementById("status").innerText =
+                        "Completing payment...";
 
-                        method: "POST",
+                    try {
 
-                        headers: {
-                            "Content-Type": "application/json"
-                        },
+                        const response =
+                        await fetch("/api/complete", {
 
-                        body: JSON.stringify({
-                            paymentId: paymentId,
-                            txid: txid
-                        })
+                            method: "POST",
 
-                    })
+                            headers: {
+                                "Content-Type":
+                                "application/json"
+                            },
 
-                    .then(response => response.json())
+                            body: JSON.stringify({
 
-                    .then(data => {
+                                paymentId: paymentId,
 
-                        console.log("Completion response:", data);
+                                txid: txid
+
+                            })
+
+                        });
+
+                        const data =
+                        await response.json();
+
+                        console.log(data);
 
                         document.getElementById("status").innerText =
                             "Payment Completed Successfully";
 
-                    })
+                    } catch(err) {
 
-                    .catch(err => {
-
-                        console.error("Completion error:", err);
+                        console.error(err);
 
                         document.getElementById("status").innerText =
                             "Completion Failed";
-                    });
+                    }
                 },
 
                 onCancel: function(paymentId) {
 
-                    console.log("Payment Cancelled", paymentId);
+                    console.log(
+                        "Payment Cancelled",
+                        paymentId
+                    );
 
                     document.getElementById("status").innerText =
                         "Payment Cancelled";
@@ -160,7 +231,10 @@ document.getElementById("payBtn").onclick = async () => {
 
                 onError: function(error, payment) {
 
-                    console.error("Payment Error", error);
+                    console.error(
+                        "Payment Error",
+                        error
+                    );
 
                     document.getElementById("status").innerText =
                         "Payment Error";
@@ -168,7 +242,7 @@ document.getElementById("payBtn").onclick = async () => {
             }
         );
 
-    } catch (err) {
+    } catch(err) {
 
         console.error(err);
 
@@ -180,4 +254,5 @@ document.getElementById("payBtn").onclick = async () => {
 </script>
 
 </body>
+
 </html>
