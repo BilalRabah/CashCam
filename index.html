@@ -3,49 +3,86 @@
 
 <head>
 
-    <meta charset="UTF-8" />
+  <meta charset="UTF-8" />
 
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 
-    <title>CashCam Pi Payment</title>
+  <title>CashCam</title>
 
-    <script src="https://sdk.minepi.com/pi-sdk.js"></script>
+  <script src="https://sdk.minepi.com/pi-sdk.js"></script>
+
+  <link rel="stylesheet" href="style.css">
 
 </head>
 
-<body style="font-family: Arial; text-align:center; margin-top:50px;">
+<body>
 
-<h1>CashCam Pi Test Payment</h1>
+  <!-- Video Feed -->
+  <div class="feed">
 
-<button id="loginBtn">
-    Login with Pi
-</button>
+    <div class="video-container">
 
-<br><br>
+      <video autoplay muted loop playsinline>
+        <source src="https://www.w3schools.com/html/mov_bbb.mp4" type="video/mp4">
+      </video>
 
-<button id="payBtn">
-    Pay 0.071 Pi
-</button>
+      <div class="overlay"></div>
 
-<br><br>
+      <!-- Top Bar -->
+      <div class="top-bar">
 
-<button
-    id="clearBtn"
-    style="
-    background:red;
-    color:white;
-    border:none;
-    padding:10px 20px;
-    border-radius:8px;
-    cursor:pointer;
-    "
->
-    Clear Pending Payments
-</button>
+        <h2>CashCam</h2>
 
-<br><br>
+        <button id="loginBtn" class="login-btn">
+          Pi Login
+        </button>
 
-<p id="status"></p>
+      </div>
+
+      <!-- Video Info -->
+      <div class="video-info">
+
+        <h3>@cashcam</h3>
+
+        <p>Welcome to CashCam 🔥</p>
+
+        <button id="payBtn" class="reward-btn">
+          Earn Bonus π
+        </button>
+
+        <p id="status"></p>
+
+      </div>
+
+      <!-- Actions -->
+      <div class="actions">
+
+        <button>❤️</button>
+
+        <button>💬</button>
+
+        <button>🔗</button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- Bottom Navigation -->
+  <div class="bottom-nav">
+
+    <button>🏠</button>
+
+    <button>👥</button>
+
+    <button class="upload-btn">＋</button>
+
+    <button>📩</button>
+
+    <button>👤</button>
+
+  </div>
 
 <script>
 
@@ -188,17 +225,8 @@ async () => {
                 onReadyForServerApproval:
                 async function(paymentId) {
 
-                    console.log(
-                        "Ready for approval:",
-                        paymentId
-                    );
-
-                    document.getElementById("status").innerText =
-                        "Approving payment...";
-
                     try {
 
-                        const response =
                         await fetch("/api/approve", {
 
                             method: "POST",
@@ -219,20 +247,7 @@ async () => {
 
                         });
 
-                        const data =
-                        await response.json();
-
-                        console.log(
-                            "Approval response:",
-                            data
-                        );
-
                     } catch(err) {
-
-                        console.error(
-                            "Approval error:",
-                            err
-                        );
 
                         document.getElementById("status").innerText =
                             "Approval Failed";
@@ -244,18 +259,8 @@ async () => {
                 onReadyForServerCompletion:
                 async function(paymentId, txid) {
 
-                    console.log(
-                        "Ready for completion:",
-                        paymentId,
-                        txid
-                    );
-
-                    document.getElementById("status").innerText =
-                        "Completing payment...";
-
                     try {
 
-                        const response =
                         await fetch("/api/complete", {
 
                             method: "POST",
@@ -279,23 +284,10 @@ async () => {
 
                         });
 
-                        const data =
-                        await response.json();
-
-                        console.log(
-                            "Completion response:",
-                            data
-                        );
-
                         document.getElementById("status").innerText =
                             "Payment Completed Successfully";
 
                     } catch(err) {
-
-                        console.error(
-                            "Completion error:",
-                            err
-                        );
 
                         document.getElementById("status").innerText =
                             "Completion Failed";
@@ -306,11 +298,6 @@ async () => {
 
                 onCancel: function(paymentId) {
 
-                    console.log(
-                        "Payment Cancelled:",
-                        paymentId
-                    );
-
                     document.getElementById("status").innerText =
                         "Payment Cancelled";
                 },
@@ -318,11 +305,6 @@ async () => {
 
 
                 onError: function(error, payment) {
-
-                    console.error(
-                        "Payment Error:",
-                        error
-                    );
 
                     document.getElementById("status").innerText =
                         "Payment Error";
@@ -332,43 +314,8 @@ async () => {
 
     } catch(err) {
 
-        console.error(err);
-
         document.getElementById("status").innerText =
             "Unexpected Error";
-    }
-};
-
-
-
-/* =========================
-   CLEAR PENDING
-========================= */
-
-document.getElementById("clearBtn").onclick =
-async () => {
-
-    try {
-
-        localStorage.clear();
-
-        sessionStorage.clear();
-
-        document.getElementById("status").innerText =
-            "Pending cache cleared";
-
-        setTimeout(() => {
-
-            location.reload();
-
-        }, 1500);
-
-    } catch(err) {
-
-        console.error(err);
-
-        document.getElementById("status").innerText =
-            "Clear failed";
     }
 };
 
