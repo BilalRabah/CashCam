@@ -12,12 +12,12 @@ export default async function handler(req, res) {
       ? JSON.parse(req.body)
       : req.body;
 
-    const paymentId = body.paymentId;
+    const paymentId = body?.paymentId;
 
     if (!paymentId) {
       return res.status(400).json({
         success: false,
-        message: "Missing paymentId"
+        message: "paymentId missing"
       });
     }
 
@@ -33,6 +33,13 @@ export default async function handler(req, res) {
     );
 
     const data = await response.json();
+
+    if (!response.ok) {
+      return res.status(500).json({
+        success: false,
+        error: data
+      });
+    }
 
     return res.status(200).json({
       success: true,
