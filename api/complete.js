@@ -12,12 +12,13 @@ export default async function handler(req, res) {
       ? JSON.parse(req.body)
       : req.body;
 
-    const { paymentId, txid } = body;
+    const paymentId = body?.paymentId;
+    const txid = body?.txid;
 
     if (!paymentId || !txid) {
       return res.status(400).json({
         success: false,
-        message: "Missing paymentId or txid"
+        message: "paymentId or txid missing"
       });
     }
 
@@ -34,6 +35,13 @@ export default async function handler(req, res) {
     );
 
     const data = await response.json();
+
+    if (!response.ok) {
+      return res.status(500).json({
+        success: false,
+        error: data
+      });
+    }
 
     return res.status(200).json({
       success: true,
