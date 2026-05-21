@@ -1,25 +1,32 @@
-module.exports = async (req, res) => {
+export default async function handler(req, res) {
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
 
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-
-  if (req.method === 'OPTIONS') {
+  if (req.method === "OPTIONS") {
     return res.status(200).end();
   }
 
   try {
+    const body = typeof req.body === "string"
+      ? JSON.parse(req.body)
+      : req.body;
 
-    const paymentId = req.body.paymentId;
+    const paymentId = body.paymentId;
+
+    if (!paymentId) {
+      return res.status(400).json({
+        success: false,
+        message: "Missing paymentId"
+      });
+    }
 
     const response = await fetch(
       `https://api.minepi.com/v2/payments/${paymentId}/approve`,
       {
         method: "POST",
-
         headers: {
-          "Authorization":
-            "Key 6gv2wlgs5ucf99622gbfnmfnsdwqu5cewvdjwd5fcsz2flbp2mf2vpft2afyio1f",
+          "Authorization": `Key ${process.env.PI_API_KEY}`,
           "Content-Type": "application/json"
         }
       }
@@ -27,16 +34,15 @@ module.exports = async (req, res) => {
 
     const data = await response.json();
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       data
     });
 
   } catch (error) {
-
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       error: error.toString()
     });
   }
-};
+}
